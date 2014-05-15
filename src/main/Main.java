@@ -21,27 +21,15 @@ public class Main {
 
     public static void main(String[] args) {
         setupServer();
-
         ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREAD);
 
-        ServerSocket socket = null;
-
-        try {
-            socket = new ServerSocket(PORT);
-        } catch (IOException e) {
-            System.err.println("Could not start server: " + e);
-            System.exit(-1);
-        }
+        ServerSocket socket = getServerSocket(PORT);
 
         System.out.println("Main waiting on  " + PORT);
-
-
         while (true) {
-            Socket connection = null;
-
-            try {
+            Socket connection;
+             try {
                 connection = socket.accept();
-
                 ClientHandler handler = new ClientHandler(connection, WEB_ROOT_DIRECTORY);
                 executor.execute(handler);
             } catch (IOException e) {
@@ -57,5 +45,17 @@ public class Main {
         PORT = Integer.parseInt(prop.getProperty("port"));
         NUMBER_OF_THREAD = Integer.parseInt(prop.getProperty("nthread"));
         WEB_ROOT_DIRECTORY = prop.getProperty("homeDirectory");
+    }
+
+    private static ServerSocket getServerSocket(int port) {
+        ServerSocket socket = null;
+        try {
+            socket = new ServerSocket(PORT);
+        } catch (IOException e) {
+            System.err.println("Could not start server: " + e);
+            System.exit(-1);
+        }
+
+        return socket;
     }
 }

@@ -1,5 +1,7 @@
 package main;
 
+import util.HttpResponseHandler;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -10,17 +12,13 @@ import java.net.Socket;
  * Time: 11:24 AM
  * To change this template use File | Settings | File Templates.
  */
-public class GetRequestHandler implements RequestHandler {
-
-
+public class GetRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(String request,BufferedReader in, Socket connection, String homeDir, int contentLength) {
-
         String requestFilePath = request.substring(4, request.length() - 9).trim();
 
         OutputStream out = null;
         PrintStream pout = null;
-
 
         try {
             out = new BufferedOutputStream(connection.getOutputStream());
@@ -29,17 +27,12 @@ public class GetRequestHandler implements RequestHandler {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-
         if (requestFilePath.indexOf("..") != -1 || requestFilePath.indexOf("/.ht") != -1) {
-
-            HttpResponseManager.responseError(pout, connection, "403", "Forbidden",
+             HttpResponseHandler.responseError(pout, connection, "403", "Forbidden",
                     "You don't have permission to access the requested URL.");
         } else {
-
             String path = homeDir + "/" + requestFilePath;
-
             File f = new File(path);
-
             if (f.isDirectory()) {
                 path = path + "index.html";
                 f = new File(path);
@@ -47,21 +40,16 @@ public class GetRequestHandler implements RequestHandler {
             try {
                 InputStream file = new FileInputStream(f);
 
-                HttpResponseManager.sendOkToClient(pout, path);
+                HttpResponseHandler.sendOkToClient(pout, path);
+                HttpResponseHandler.sendRequestedFile(file, out);
+                HttpResponseHandler.log(connection, "200 OK");
+              } catch (FileNotFoundException e) {
 
-                HttpResponseManager.sendRequestedFile(file, out);
-
-                HttpResponseManager.log(connection, "200 OK");
-
-            } catch (FileNotFoundException e) {
-
-                HttpResponseManager.responseError(pout, connection, "404", "Not Found",
+                HttpResponseHandler.responseError(pout, connection, "404", "Not Found",
                         "The requested URL was not found on this server.");
             }
 
         }
 
     }
-
-
 }

@@ -1,5 +1,9 @@
 package main;
 
+import util.HttpResponseHandler;
+import util.RequestReader;
+import util.RequestValidator;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -11,9 +15,7 @@ import java.net.Socket;
  * To change this template use File | Settings | File Templates.
  */
 public class ClientHandler implements Runnable {
-
     private static String WEB_ROOT;
-
     private Socket connection;
 
     public ClientHandler(Socket socket, String WEB_ROOT) {
@@ -58,17 +60,15 @@ public class ClientHandler implements Runnable {
 
         if (request != null) {
             if (RequestValidator.isPostRequest(request)) {
-                RequestHandler requestHandler = new PostRequestHandler();
+                HttpRequestHandler requestHandler = new PostRequestHandler();
                 requestHandler.handleRequest(request, in, connection, WEB_ROOT, postConentLength);
 
             } else if (RequestValidator.isGetRequest(request)) {
-
-                RequestHandler requestHandler = new GetRequestHandler();
+                HttpRequestHandler requestHandler = new GetRequestHandler();
                 requestHandler.handleRequest(request, in, connection, WEB_ROOT, 0);
 
             } else {
-
-                HttpResponseManager.responseError(pout, connection, "400", "Bad Request",
+                HttpResponseHandler.responseError(pout, connection, "400", "Bad Request",
                         "Your browser sent a request that " +
                                 "this server could not understand.");
             }
@@ -77,7 +77,9 @@ public class ClientHandler implements Runnable {
                 if (connection != null) connection.close();
             } catch (IOException e) {
                 System.err.println(e);
-            } finally {
+            }
+
+            finally {
                 try {
                     if (out != null) out.close();
                     if (pout != null) pout.close();

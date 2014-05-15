@@ -1,6 +1,12 @@
 package main;
 
-import java.io.*;
+import util.HttpResponseHandler;
+import util.RequestReader;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +21,7 @@ import java.util.Map;
 * Time: 12:44 PM
 * To change this template use File | Settings | File Templates.
 */
-public class PostRequestHandler implements RequestHandler {
+public class PostRequestHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(String request, BufferedReader in , Socket connection, String homeDir, int postContentLength) {
@@ -27,15 +33,13 @@ public class PostRequestHandler implements RequestHandler {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-        HttpResponseManager.sendOkToClient(pout, " ");
+        HttpResponseHandler.sendOkToClient(pout, " ");
 
         StringBuilder postReqStr = new StringBuilder("");
 
         for (int i = 0; i < postContentLength; i++) {
             postReqStr.append(RequestReader.readIncomingChar(in));
         }
-
-        HttpResponseManager.sendOkToClient(pout, " ");
 
         Map<String, String> postMap = getPostDataMap(postReqStr.toString());
         System.out.println("Post  " + postMap);
